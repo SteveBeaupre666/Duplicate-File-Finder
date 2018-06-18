@@ -18,6 +18,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 public:		// User declarations
 	__fastcall TOpenDirectoryForm(TComponent* Owner);
+	String __fastcall GetPath();
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TOpenDirectoryForm *OpenDirectoryForm;

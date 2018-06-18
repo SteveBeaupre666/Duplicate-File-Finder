@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
-#ifndef MainUnitH
-#define MainUnitH
+#ifndef MainUnitshitH
+#define MainUnitshitH
 //---------------------------------------------------------------------------
 #include <System.Classes.hpp>
 //---------------------------------------------------------------------------
@@ -18,14 +18,6 @@
 //---------------------------------------------------------------------------
 #define UI64   unsigned __int64
 #define UINT64 unsigned __int64
-//---------------------------------------------------------------------------
-#define SAFE_DELETE(x)  if(x){delete x;x=NULL;}
-//---------------------------------------------------------------------------
-struct CFileData {
-	UINT64 FileSize;
-	String FileName;
-	bool   Duplicated;
-};
 //---------------------------------------------------------------------------
 class TMainForm : public TForm
 {
@@ -49,8 +41,10 @@ __published:	// IDE-managed Components
 private:	// User declarations
 
 	void __fastcall ScanPaths();
-	void __fastcall ScanDir(String &dir);
-	void __fastcall SaveFilesList(String &fname);
+	void __fastcall ScanDirectory(String path);
+	void __fastcall ButtonScanClick(TObject *Sender);
+
+	void __fastcall SaveFilesList(String fname);
 
 	UI64 __fastcall FindDuplicates();
 	bool __fastcall CompareFiles(String fname1, String fname2, UINT64 fsize);

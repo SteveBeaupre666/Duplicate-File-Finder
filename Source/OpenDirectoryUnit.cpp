@@ -9,3 +9,9 @@ TOpenDirectoryForm *OpenDirectoryForm;
 //---------------------------------------------------------------------------
 __fastcall TOpenDirectoryForm::TOpenDirectoryForm(TComponent* Owner):TForm(Owner){}
 //---------------------------------------------------------------------------
+String __fastcall TOpenDirectoryForm::GetPath()
+{
+	return DirectoryListBox->Directory;
+}
+//---------------------------------------------------------------------------
+

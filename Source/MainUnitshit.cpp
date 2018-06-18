@@ -1,29 +1,25 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-#include "MainUnit.h"
+#include "MainUnitshit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 TMainForm *MainForm;
 //---------------------------------------------------------------------------
+struct CFileData {
+	UINT64 FileSize;
+	String FileName;
+	bool   Duplicated;
+};
 //---------------------------------------------------------------------------
-String AppDir   = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\";
-String TestDir  = AppDir + "Test Folder";
-String FileName = AppDir + "FilesList.txt";
-String fname = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\Duplicates.txt";
-//---------------------------------------------------------------------------
-typedef LinkedList<CFileData> CFilesList;
-CFilesList FilesList;
-//---------------------------------------------------------------------------
+LinkedList<CFileData> FilesList;
 //---------------------------------------------------------------------------
 __fastcall TMainForm::TMainForm(TComponent* Owner):TForm(Owner){}
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 void __fastcall TMainForm::FormCreate(TObject *Sender)
 {
-	ListBoxPaths->Items->Add(TestDir);
+	ListBoxPaths->Items->Add("C:\\New Programming Folder\\Programs\\Duplicate File Finder\\Test Folder");
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
@@ -31,63 +27,25 @@ void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 	FilesList.Clear();
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::ButtonAddClick(TObject *Sender)
-{
-	TOpenDirectoryForm *pOpenDirDlg = new TOpenDirectoryForm(this);
-
-	if(pOpenDirDlg && pOpenDirDlg->ShowModal() == mrOk){
-		String dir = pOpenDirDlg->DirectoryListBox->Directory;
-		ListBoxPaths->Items->Add(dir);
-	}
-
-	SAFE_DELETE(pOpenDirDlg);
-}
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::ButtonDeleteClick(TObject *Sender)
-{
-	int i = 0;
-	while(i < ListBoxPaths->Items->Count){
-
-		if(ListBoxPaths->Selected[i]){
-			i++;
-			continue;
-		}
-
-		ListBoxPaths->Items->Delete(i);
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::ButtonClearClick(TObject *Sender)
-{
-	ListBoxPaths->Items->Clear();
-}
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::ButtonScanClick(TObject *Sender)
-{
-	ScanPaths();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 void __fastcall TMainForm::ScanPaths()
 {
 	FilesList.Clear();
-	int n = ListBoxPaths->Items->Count;
+	int NumPaths = ListBoxPaths->Items->Count;
+	if(NumPaths == 0){
+		return;
 
-	for(int i = 0; i < n; i++){
+	for(int i = 0; i < NumPaths; i++){
 		String path = ListBoxPaths->Items->Strings[i];
-		ScanDir(path);
+		Scan(path);
 	}
 }
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::ScanDir(String &dir)
+void __fastcall TMainForm::ScanDirectory(String path)
 {
 	WIN32_FIND_DATAW fd;
 	ZeroMemory(&fd, sizeof(fd));
 
-	String PathToScan = dir + "\\*";
+	String PathToScan = path + "\\*";
 
 	HANDLE h = FindFirstFile(PathToScan.c_str(), &fd);
 	if(h == INVALID_HANDLE_VALUE)
@@ -108,7 +66,7 @@ void __fastcall TMainForm::ScanDir(String &dir)
 			CFileData fi;
 			ZeroMemory(&fi, sizeof(fi));
 
-			String FileName = dir + "\\" + fname;
+			String FileName = path + "\\" + fname;
 			UINT64 FileSize = ((UINT64)fd.nFileSizeHigh << 32) | ((UINT64)fd.nFileSizeLow);
 
 			fi.FileName = FileName;
@@ -117,8 +75,8 @@ void __fastcall TMainForm::ScanDir(String &dir)
 
 			FilesList.Push(&fi);
 		} else {
-			String NewPath = dir + "\\" + fname;
-			ScanDir(NewPath);
+			String NewPath = path + "\\" + fname;
+			Scan(NewPath);
 		}
 
 
@@ -129,7 +87,64 @@ void __fastcall TMainForm::ScanDir(String &dir)
 	FindClose(h);
 }
 //---------------------------------------------------------------------------
+void __fastcall TMainForm::ButtonScanClick(TObject *Sender)
+{
+
+	String fname = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\FilesList.txt";
+	SaveFilesList(fname);
+
+	FindDuplicates();
+	//UINT64 NumDups = FindDuplicates();x
+	//ShowMessage("Dupliates Found: " + IntToStr((__int64)NumDups) + ".");
+}
 //---------------------------------------------------------------------------
+void __fastcall TMainForm::ButtonAddClick(TObject *Sender)
+{
+	TOpenDirectoryForm *pOpenDirDlg = new TOpenDirectoryForm(this);
+
+	if(pOpenDirDlg){
+		if(pOpenDirDlg->ShowModal() == mrOk){
+			String dir = pOpenDirDlg->DirectoryListBox->Directory;
+			ListBoxPaths->Items->Add(dir);
+		}
+
+		delete pOpenDirDlg;
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ButtonDeleteClick(TObject *Sender)
+{
+	int indx = ListBoxPaths->ItemIndex;
+	if(indx >= 0)
+		ListBoxPaths->Items->Delete(indx);
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ButtonClearClick(TObject *Sender)
+{
+	ListBoxPaths->Items->Clear();
+}
+//---------------------------------------------------------------------------
+// TODO: rewrite this with the new unicode TxtFile class
+//---------------------------------------------------------------------------
+/*void __fastcall TMainForm::SaveFilesList(char *fname)
+{
+	CTxtFile f;
+	if(f.Create(fname)){
+
+		LinkedListNode<CFileData> *node = FilesList.GetFirstNode();
+
+		while(node){
+
+			AnsiString s = AnsiString(node->item.FileName);
+
+			f.WriteArgs("%s\n", s.c_str());
+
+			node = node->next;
+		}
+
+		f.Close();
+	}
+}*/
 //---------------------------------------------------------------------------
 UI64 __fastcall TMainForm::FindDuplicates()
 {
@@ -244,25 +259,6 @@ bool __fastcall TMainForm::CompareFiles(String fname1, String fname2, UINT64 fsi
 	if(h2 != INVALID_HANDLE_VALUE){CloseHandle(h2);}
 
 	return res;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::SaveFilesList(String &fname)
-{
-	CTxtFile f;
-	if(f.Create(fname.c_str())){
-
-		LinkedListNode<CFileData> *node = FilesList.GetFirstNode();
-
-		while(node){
-			wchar_t *FileName = fname.c_str();
-			f.WriteLine(FileName);
-			node = node->next;
-		}
-
-		f.Close();
-	}
 }
 //---------------------------------------------------------------------------
 
