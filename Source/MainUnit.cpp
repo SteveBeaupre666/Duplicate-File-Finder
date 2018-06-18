@@ -32,12 +32,12 @@ void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 void __fastcall TMainForm::ButtonScanClick(TObject *Sender)
 {
 	FilesList.Clear();
-
 	ScanFolders();
 	//SaveFilesList((char*)FilesListName);
 
-	UINT64 NumDups = FindDuplicates();
-	ShowMessage("Dupliates Found: " + IntToStr((__int64)NumDups) + ".");
+	FindDuplicates();
+	//UINT64 NumDups = FindDuplicates();x
+	//ShowMessage("Dupliates Found: " + IntToStr((__int64)NumDups) + ".");
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ButtonAddClick(TObject *Sender)
@@ -65,6 +65,8 @@ void __fastcall TMainForm::ButtonClearClick(TObject *Sender)
 {
 	ListBoxPaths->Items->Clear();
 }
+//---------------------------------------------------------------------------
+// TODO: rewrite this with the new unicode TxtFile class
 //---------------------------------------------------------------------------
 /*void __fastcall TMainForm::SaveFilesList(char *fname)
 {
@@ -148,6 +150,8 @@ UI64 __fastcall TMainForm::FindDuplicates()
 	static const wchar_t newline = '\n';
 	static const String fname = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\Duplicates.txt";
 
+	CheckListBoxDuplicatesFiles->Items->Clear();
+
 	CTxtFile f;
 	if(!f.Create(fname.c_str()))
 		return 0;
@@ -183,17 +187,18 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 					if(i1->Duplicated == false){
 						f.WriteLine(fname1);
-						f.WriteChar(newline);
+						CheckListBoxDuplicatesFiles->Items->Add(fname1);
+						NumDuplicatesFound++;
 					}
 
 					f.WriteLine(fname2);
-					f.WriteChar(newline);
+					CheckListBoxDuplicatesFiles->Items->Add(fname2);
+					NumDuplicatesFound++;
 
 					i1->Duplicated = true;
 					i2->Duplicated = true;
 
 					duplicated = true;
-					NumDuplicatesFound++;
 				}
 			}
 
@@ -201,6 +206,7 @@ UI64 __fastcall TMainForm::FindDuplicates()
 			n2 = n2->next;
 		}
 
+		// This should be at the start of the first loop somehow...
 		if(duplicated)
 			f.WriteChar(newline);
 

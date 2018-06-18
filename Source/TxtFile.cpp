@@ -116,7 +116,7 @@ bool CTxtFile::WriteChar(wchar_t c)
  
 //----------------------------------------------------------------------//
 
-int CTxtFile::WriteLine(wchar_t *buffer)
+int CTxtFile::WriteString(wchar_t *buffer)
 {
 	if(!IsOpened())
 		return 0;
@@ -125,7 +125,22 @@ int CTxtFile::WriteLine(wchar_t *buffer)
 
 	return res;
 }
- 
+
+//----------------------------------------------------------------------//
+
+int CTxtFile::WriteLine(wchar_t *buffer)
+{
+	static const wchar_t newline = '\n';
+
+	if(!IsOpened())
+		return 0;
+
+	int res = fputws(buffer, hFile);
+	fputwc(newline, hFile);
+
+	return res+1; // Return values are weird here...
+}
+
 //----------------------------------------------------------------------//
 
 int CTxtFile::WriteArgs(const wchar_t *fmt, ...)

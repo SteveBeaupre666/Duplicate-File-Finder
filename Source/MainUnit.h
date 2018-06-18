@@ -6,6 +6,7 @@
 //---------------------------------------------------------------------------
 #include <Vcl.Forms.hpp>
 #include <Vcl.Menus.hpp>
+#include <Vcl.CheckLst.hpp>
 #include <Vcl.Controls.hpp>
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Samples.Gauges.hpp>
@@ -14,7 +15,6 @@
 //---------------------------------------------------------------------------
 #include "TxtFile.h"
 #include "LinkedList.h"
-#include <Vcl.CheckLst.hpp>
 //---------------------------------------------------------------------------
 #define UI64   unsigned __int64
 #define UINT64 unsigned __int64

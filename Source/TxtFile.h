@@ -22,6 +22,7 @@ public:
 	wchar_t* ReadLine(wchar_t *buffer, int size);
 
 	bool WriteChar(wchar_t c);
+	int  WriteString(wchar_t *buffer);
 	int  WriteLine(wchar_t *buffer);
 	int  WriteArgs(const wchar_t *fmt, ...);
 
