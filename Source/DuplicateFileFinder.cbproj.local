@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899-12-30 00:00:00.000.562,C:\New Programming Folder\Programs\Duplicate File Finder\OpenDirectoryUnit.dfm=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.496,C:\New Programming Folder\Programs\Duplicate File Finder\MainUnit.dfm=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.030,C:\New Programming Folder\Programs\Duplicate File Finder\PathsUnit.cpp=</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.562,C:\New Programming Folder\Programs\Duplicate File Finder\OpenDirectoryUnit.h=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.070,=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.897,=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.856,C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.cpp=C:\New Programming Folder\Programs\Duplicate File Finder\PathsUnit.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.496,C:\New Programming Folder\Programs\Duplicate File Finder\MainUnit.h=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.131,=C:\New Programming Folder\Programs\Duplicate File Finder\LinkedList.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.431,C:\New Programming Folder\Programs\Duplicate File Finder\FilesList.h=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.496,C:\New Programming Folder\Programs\Duplicate File Finder\MainUnit.cpp=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.650,C:\New Programming Folder\Programs\Duplicate File Finder\DuplicateFileFinder.cbproj=C:\Users\Steve\Documents\RAD Studio\Projects\Project1.cbproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.708,C:\New Programming Folder\Programs\Duplicate File Finder\DuplicateFileFinderPCH.h=C:\Users\Steve\Documents\RAD Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.856,C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.h=C:\New Programming Folder\Programs\Duplicate File Finder\PathsUnit.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.562,C:\New Programming Folder\Programs\Duplicate File Finder\OpenDirectoryUnit.cpp=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.715,=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.822,=C:\New Programming Folder\Programs\Duplicate File Finder\TxtFile.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.526,C:\New Programming Folder\Programs\Duplicate File Finder\TxtFile.cpp=</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.628,=C:\New Programming Folder\Programs\Duplicate File Finder\TxtFile.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.965,=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.900,=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.172,=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.984,=C:\Users\Steve\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.856,C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.dfm=C:\New Programming Folder\Programs\Duplicate File Finder\PathsUnit.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.966,=C:\Users\Steve\Documents\RAD Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.947,=C:\Users\Steve\Documents\RAD Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.093,=C:\Users\Steve\Documents\RAD Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.820,=C:\Users\Steve\Documents\RAD Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.431,C:\New Programming Folder\Programs\Duplicate File Finder\FilesList.cpp=C:\New Programming Folder\Programs\Duplicate File Finder\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.343,=C:\New Programming Folder\Programs\Duplicate File Finder\FilesList.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.640,C:\New Programming Folder\Programs\Duplicate File Finder\FilesList.cpp=</Transaction>
+  </Transactions>
+</BorlandProject>
