@@ -6,8 +6,6 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 TMainForm *MainForm;
 //---------------------------------------------------------------------------
 UI64    TableSize  = 0;
@@ -20,6 +18,8 @@ const String AppDir          = APPDIR;
 const String TestDir         = AppDir + "\\Test Folder";
 const String ScannedFiles    = AppDir + "\\FilesList.txt";
 const String DuplicatedFiles = AppDir + "\\DuplicatesList.txt";
+//---------------------------------------------------------------------------
+//const wchar_t newline = '\n';
 //---------------------------------------------------------------------------
 __fastcall TMainForm::TMainForm(TComponent* Owner):TForm(Owner){}
 //---------------------------------------------------------------------------
@@ -151,9 +151,9 @@ void __fastcall TMainForm::ScanPaths()
 		ScanDir(path);
 	}
 
-	HWND h = this->Handle;
+	/*HWND h = this->Handle;
 	if(MessageBoxA(h, "Warning!", "Save the list of scanned files?", MB_YESNO) == IDOK)
-		SaveFilesList(ScannedFiles);
+		SaveFilesList(ScannedFiles);*/
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -232,8 +232,6 @@ void __fastcall TMainForm::ScanDir(String &dir)
 //---------------------------------------------------------------------------
 UI64 __fastcall TMainForm::FindDuplicates()
 {
-	//static const wchar_t newline = '\n';
-
 	DuplicatesList.Clear();
 	CheckListBoxDuplicatesFiles->Items->Clear();
 
@@ -262,12 +260,12 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 			if(i1->FileSize == i2->FileSize){
 
-				if(CompareFiles(i1->FileName, i2->FileName, i1->FileSize)){
+				String FileName1 = i1->FileName;
+				String FileName2 = i2->FileName;
+
+				if(CompareFiles(FileName1, FileName2, i1->FileSize)){
 
 					duplicated = true;
-
-					String FileName1 = i1->FileName;
-					String FileName2 = i2->FileName;
 
 					wchar_t *fname1 = FileName1.c_str();
 					wchar_t *fname2 = FileName2.c_str();
@@ -307,6 +305,9 @@ UI64 __fastcall TMainForm::FindDuplicates()
 //---------------------------------------------------------------------------
 bool __fastcall TMainForm::CompareFiles(String fname1, String fname2, UINT64 fsize)
 {
+	if(fsize == 0)
+		return false;
+
 	bool res = true;
 
 	HANDLE h1 = CreateFileW(fname1.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
