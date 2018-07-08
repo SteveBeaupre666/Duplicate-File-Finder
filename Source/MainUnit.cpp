@@ -5,30 +5,36 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 TMainForm *MainForm;
 //---------------------------------------------------------------------------
+UI64    TableSize  = 0;
+TColor *ColorTable = NULL;
 //---------------------------------------------------------------------------
-String AppDir   = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\";
-String TestDir  = AppDir + "Test Folder";
-String FileName = AppDir + "FilesList.txt";
-String fname = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\Duplicates.txt";
+CFilesList      FilesList;
+CDuplicatesList DuplicatesList;
 //---------------------------------------------------------------------------
-typedef LinkedList<CFileData> CFilesList;
-CFilesList FilesList;
-//---------------------------------------------------------------------------
+const String AppDir          = APPDIR;
+const String TestDir         = AppDir + "\\Test Folder";
+const String ScannedFiles    = AppDir + "\\FilesList.txt";
+const String DuplicatedFiles = AppDir + "\\DuplicatesList.txt";
 //---------------------------------------------------------------------------
 __fastcall TMainForm::TMainForm(TComponent* Owner):TForm(Owner){}
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 void __fastcall TMainForm::FormCreate(TObject *Sender)
 {
+	#ifdef TESTMODE
 	ListBoxPaths->Items->Add(TestDir);
+	#endif
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
+	ClearColorTable();
 	FilesList.Clear();
+	DuplicatesList.Clear();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -37,12 +43,15 @@ void __fastcall TMainForm::ButtonAddClick(TObject *Sender)
 {
 	TOpenDirectoryForm *pOpenDirDlg = new TOpenDirectoryForm(this);
 
-	if(pOpenDirDlg && pOpenDirDlg->ShowModal() == mrOk){
-		String dir = pOpenDirDlg->DirectoryListBox->Directory;
-		ListBoxPaths->Items->Add(dir);
+	try {
+		if(pOpenDirDlg && pOpenDirDlg->ShowModal() == mrOk){
+			String dir = pOpenDirDlg->DirectoryListBox->Directory;
+			ListBoxPaths->Items->Add(dir);
+		}
+	} __finally {
+		SAFE_DELETE(pOpenDirDlg);
 	}
 
-	SAFE_DELETE(pOpenDirDlg);
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ButtonDeleteClick(TObject *Sender)
@@ -67,6 +76,67 @@ void __fastcall TMainForm::ButtonClearClick(TObject *Sender)
 void __fastcall TMainForm::ButtonScanClick(TObject *Sender)
 {
 	ScanPaths();
+	FindDuplicates();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+TColor __fastcall TMainForm::GetColor(BYTE r, BYTE g, BYTE b, BYTE a)
+{
+	DWORD col = ((DWORD)r) | ((DWORD)g << 8) | ((DWORD)g << 16) | ((DWORD)a << 24);
+	return TColor(col);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
+{
+	TCheckListBox* CheckListBox = CheckListBoxDuplicatesFiles;
+	TCanvas *Canvas = CheckListBox->Canvas;
+
+	// Save pen, brush and fonts settings
+	TColor OldPen   = Canvas->Pen->Color;
+	TColor OldBrush = Canvas->Brush->Color;
+	TColor OldFont  = Canvas->Font->Color;
+
+	// Paint the background
+	Canvas->Brush->Color = clWindow;
+	Canvas->Font->Color  = clWindowText;
+	Canvas->FillRect(Rect);
+
+	// Store text settings...
+	int l = Rect.Left;
+	int w = Rect.Right - Rect.Left;
+	int h = CheckListBox->ItemHeight;
+	int n = CheckListBox->Items->Count;
+
+	//int k = 0;
+	for(int i = 0; i < n; i++){
+
+		int x = 17;
+		int y = h * i;
+
+		TColor col = clWhite;
+		if(ColorTable && i < (int)TableSize)
+			col = ColorTable[i];
+
+		Canvas->Pen->Color   = col;
+		Canvas->Brush->Color = col;
+
+		TRect r(l, y, l+w, y+h);
+		Canvas->Rectangle(r);
+
+		String txt = CheckListBox->Items->Strings[i];
+		Canvas->TextOutW(x,y, txt);
+
+		if(CheckListBox->State[i] == odFocused)
+			Canvas->DrawFocusRect(Rect);
+	}
+
+	// Restore pen, brush and fonts settings
+	Canvas->Pen->Color   = OldPen;
+	Canvas->Brush->Color = OldBrush;
+	Canvas->Font->Color  = OldFont;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -80,6 +150,37 @@ void __fastcall TMainForm::ScanPaths()
 		String path = ListBoxPaths->Items->Strings[i];
 		ScanDir(path);
 	}
+
+	HWND h = this->Handle;
+	if(MessageBoxA(h, "Warning!", "Save the list of scanned files?", MB_YESNO) == IDOK)
+		SaveFilesList(ScannedFiles);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+bool __fastcall TMainForm::SaveFilesList(const String &fname)
+{
+	CTxtFile f;
+	if(f.Create(fname.c_str())){
+
+		CFilesListNode *node = FilesList.GetFirstNode();
+
+		while(node){
+
+			int res = f.WriteLine(fname.c_str());
+
+			if(!res){
+				f.Close();
+				return false;
+			}
+
+			node = node->GetNext();
+		}
+
+		f.Close();
+	}
+	
+	return true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ScanDir(String &dir)
@@ -105,22 +206,20 @@ void __fastcall TMainForm::ScanDir(String &dir)
 		bool IsDirectory = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0;
 
 		if(!IsDirectory){
-			CFileData fi;
-			ZeroMemory(&fi, sizeof(fi));
 
 			String FileName = dir + "\\" + fname;
 			UINT64 FileSize = ((UINT64)fd.nFileSizeHigh << 32) | ((UINT64)fd.nFileSizeLow);
 
-			fi.FileName = FileName;
-			fi.FileSize = FileSize;
-			fi.Duplicated = false;
+			CFileInfo fi;
+			fi.FileName   = FileName;
+			fi.FileSize   = FileSize;
+			fi.Duplicated = FALSE;
 
-			FilesList.Push(&fi);
+			FilesList.Add(&fi);
 		} else {
 			String NewPath = dir + "\\" + fname;
 			ScanDir(NewPath);
 		}
-
 
 		if(!FindNextFile(h, &fd))
 			break;
@@ -133,33 +232,30 @@ void __fastcall TMainForm::ScanDir(String &dir)
 //---------------------------------------------------------------------------
 UI64 __fastcall TMainForm::FindDuplicates()
 {
-	static const wchar_t newline = '\n';
-	static const String fname = "C:\\New Programming Folder\\Programs\\Duplicate File Finder\\Duplicates.txt";
+	//static const wchar_t newline = '\n';
 
+	DuplicatesList.Clear();
 	CheckListBoxDuplicatesFiles->Items->Clear();
 
-	CTxtFile f;
-	if(!f.Create(fname.c_str()))
-		return 0;
-
+	UINT64 id = 0;
 	UINT64 NumDuplicatesFound = 0;
 
-	LinkedListNode<CFileData> *n2 = NULL;
-	LinkedListNode<CFileData> *n1 = FilesList.GetFirstNode();
+	CFilesListNode *n2 = NULL;
+	CFilesListNode *n1 = FilesList.GetFirstNode();
 
 	while(n1){
 
 		bool duplicated = false;
 
-		if(n1->item.Duplicated)
+		if(n1->IsDuplicated())
 			goto Next1;
 
-		n2 = n1->next;
+		n2 = n1->GetNext();
 
 		while(n2){
 
-			CFileData *i1 = &n1->item;
-			CFileData *i2 = &n2->item;
+			CFileInfo *i1 = n1->GetFileInfo();
+			CFileInfo *i2 = n2->GetFileInfo();
 
 			if(i2->Duplicated)
 				goto Next2;
@@ -168,39 +264,43 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 				if(CompareFiles(i1->FileName, i2->FileName, i1->FileSize)){
 
-					wchar_t *fname1 = i1->FileName.c_str();
-					wchar_t *fname2 = i2->FileName.c_str();
+					duplicated = true;
 
-					if(i1->Duplicated == false){
-						f.WriteLine(fname1);
-						CheckListBoxDuplicatesFiles->Items->Add(fname1);
+					String FileName1 = i1->FileName;
+					String FileName2 = i2->FileName;
+
+					wchar_t *fname1 = FileName1.c_str();
+					wchar_t *fname2 = FileName2.c_str();
+
+					if(i1->Duplicated == FALSE){
+
 						NumDuplicatesFound++;
+						i1->Duplicated = TRUE;
+
+						DuplicatesList.Add(i1, id);
+						CheckListBoxDuplicatesFiles->Items->Add(fname1);
 					}
 
-					f.WriteLine(fname2);
-					CheckListBoxDuplicatesFiles->Items->Add(fname2);
 					NumDuplicatesFound++;
+					i2->Duplicated = TRUE;
 
-					i1->Duplicated = true;
-					i2->Duplicated = true;
-
-					duplicated = true;
+					DuplicatesList.Add(i2, id);
+					CheckListBoxDuplicatesFiles->Items->Add(fname2);
 				}
 			}
 
 			Next2:
-			n2 = n2->next;
+			n2 = n2->GetNext();
 		}
 
-		// This should be at the start of the first loop somehow...
 		if(duplicated)
-			f.WriteChar(newline);
+			id++;
 
 		Next1:
-		n1 = n1->next;
+		n1 = n1->GetNext();
 	}
 
-	f.Close();
+	BuildColorTable();
 
 	return NumDuplicatesFound;
 }
@@ -246,23 +346,34 @@ bool __fastcall TMainForm::CompareFiles(String fname1, String fname2, UINT64 fsi
 	return res;
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::SaveFilesList(String &fname)
+void __fastcall TMainForm::BuildColorTable()
 {
-	CTxtFile f;
-	if(f.Create(fname.c_str())){
+	static const TColor Color1 = TColor(0x00FFE0E0);
+	static const TColor Color2 = TColor(0x00E0FFE0);
 
-		LinkedListNode<CFileData> *node = FilesList.GetFirstNode();
+	ClearColorTable();
 
-		while(node){
-			wchar_t *FileName = fname.c_str();
-			f.WriteLine(FileName);
-			node = node->next;
-		}
+	TableSize = DuplicatesList.GetSize();
+	if(TableSize == 0)
+		return;
 
-		f.Close();
+	ColorTable = new TColor[TableSize];
+	ZeroMemory(&ColorTable[0], TableSize * sizeof(TColor));
+
+	CDuplicatesListNode* node = DuplicatesList.GetFirstNode();
+
+	UINT i = 0;
+	while(node){
+		bool IsOdd = node->GetID() % 2 != 0;
+		ColorTable[i++] = IsOdd ? Color1 : Color2;
+		node = node->GetNext();
 	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ClearColorTable()
+{
+	TableSize = 0;
+	SAFE_DELETE(ColorTable);
 }
 //---------------------------------------------------------------------------
 

@@ -35,6 +35,8 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <ILINK_LibraryPath>Lib\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <IncludePath>Lib\;$(IncludePath)</IncludePath>
         <ProjectType>CppVCLApplication</ProjectType>
         <AllPackageLibs>rtl.lib;vcl.lib;vclx.lib;VclSmp.lib</AllPackageLibs>
         <Multithreaded>true</Multithreaded>
@@ -96,6 +98,14 @@
         <PCHCompile Include="DuplicateFileFinderPCH.h">
             <BuildOrder>1</BuildOrder>
         </PCHCompile>
+        <CppCompile Include="Lib\DuplicatesList.cpp">
+            <DependentOn>Lib\DuplicatesList.h</DependentOn>
+            <BuildOrder>6</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="Lib\FilesList.cpp">
+            <DependentOn>Lib\FilesList.h</DependentOn>
+            <BuildOrder>7</BuildOrder>
+        </CppCompile>
         <None Include="LinkedList.h">
             <BuildOrder>4</BuildOrder>
         </None>

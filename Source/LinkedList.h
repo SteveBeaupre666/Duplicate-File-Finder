@@ -4,7 +4,10 @@
 #include <stdio.h>
 //----------------------------------------------------------------------//
 
+#ifdef NODE
+#undef NODE
 #define NODE LinkedListNode<T>
+#endif
 
 //-----------------------------------------------------------------------------
 // Linked list node class
