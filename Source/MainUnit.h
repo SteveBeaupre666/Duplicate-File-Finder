@@ -15,6 +15,7 @@
 #include "TxtFile.h"
 #include "FilesList.h"
 #include "DuplicatesList.h"
+#include <Vcl.ComCtrls.hpp>
 //#include "LinkedList.h"
 //---------------------------------------------------------------------------
 #define UI64   unsigned __int64
@@ -31,14 +32,21 @@
 class TMainForm : public TForm
 {
 __published:	// IDE-managed Components
-	TGroupBox *GroupBoxSearchPaths;
-	TListBox *ListBoxPaths;
-	TButton *ButtonAdd;
-	TButton *ButtonDelete;
-	TButton *ButtonClear;
 	TButton *ButtonScan;
 	TCheckListBox *CheckListBoxDuplicatesFiles;
 	TLabel *Label1;
+	TGauge *ScanGauge;
+	TMainMenu *MainMenu;
+	TMenuItem *File1;
+	TMenuItem *Exit1;
+	TMenuItem *N1;
+	TPopupMenu *PopupMenu;
+	TButton *ButtonDeleteFiles;
+	TButton *ButtonAdd;
+	TButton *ButtonClear;
+	TButton *ButtonDelete;
+	TListBox *ListBoxPaths;
+	TLabel *Label2;
 	void __fastcall ButtonScanClick(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
@@ -49,6 +57,8 @@ __published:	// IDE-managed Components
 private:	// User declarations
 	TColor __fastcall GetColor(BYTE r, BYTE g, BYTE b, BYTE a = 0);
 	String __fastcall MakePaths(String s1, String s2);
+
+	void __fastcall EnableForm(bool enabled);
 
 	void __fastcall ScanPaths();
 	void __fastcall ScanDir(String &dir);

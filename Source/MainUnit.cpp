@@ -26,8 +26,11 @@ __fastcall TMainForm::TMainForm(TComponent* Owner):TForm(Owner){}
 void __fastcall TMainForm::FormCreate(TObject *Sender)
 {
 	#ifdef TESTMODE
-	ListBoxPaths->Items->Add(TestDir);
+	//ListBoxPaths->Items->Add(TestDir);
+	ListBoxPaths->Items->Add("C:\\Temp\\Tounes du Telephone");
 	#endif
+
+	CheckListBoxDuplicatesFiles->Style = lbStandard;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
@@ -144,6 +147,7 @@ void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Cont
 void __fastcall TMainForm::ScanPaths()
 {
 	FilesList.Clear();
+
 	int n = ListBoxPaths->Items->Count;
 
 	for(int i = 0; i < n; i++){
@@ -199,8 +203,11 @@ void __fastcall TMainForm::ScanDir(String &dir)
 		String fname = fd.cFileName;
 
 		if(fname == "." || fname == ".."){
-			FindNextFile(h, &fd);
-			continue;
+			if(!FindNextFile(h, &fd)){
+				break;
+			} else {
+				continue;
+			}
 		}
 
 		bool IsDirectory = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0;
@@ -218,6 +225,11 @@ void __fastcall TMainForm::ScanDir(String &dir)
 			FilesList.Add(&fi);
 		} else {
 			String NewPath = dir + "\\" + fname;
+			if(fname == "Mix"){
+				_asm {
+					nop
+				}
+			}
 			ScanDir(NewPath);
 		}
 
@@ -230,6 +242,19 @@ void __fastcall TMainForm::ScanDir(String &dir)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void __fastcall TMainForm::EnableForm(bool enabled)
+{
+	ButtonAdd->Enabled = enabled;
+	ButtonDelete->Enabled = enabled;
+	ButtonClear->Enabled = enabled;
+	ButtonScan->Enabled = enabled;
+	ButtonDeleteFiles->Enabled = enabled;
+	ListBoxPaths->Enabled = enabled;
+	CheckListBoxDuplicatesFiles->Enabled = enabled;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 UI64 __fastcall TMainForm::FindDuplicates()
 {
 	DuplicatesList.Clear();
@@ -238,8 +263,15 @@ UI64 __fastcall TMainForm::FindDuplicates()
 	UINT64 id = 0;
 	UINT64 NumDuplicatesFound = 0;
 
+	UINT64 i = 0;
+	UINT64 n = FilesList.GetSize();
+
 	CFilesListNode *n2 = NULL;
 	CFilesListNode *n1 = FilesList.GetFirstNode();
+
+	EnableForm(false);
+	ScanGauge->Progress = 0;
+	Application->ProcessMessages();
 
 	while(n1){
 
@@ -252,6 +284,11 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 		while(n2){
 
+			if((GetAsyncKeyState(VK_ESCAPE) & 0x0800) > 0){
+				ShowMessage("Operation aborted.");
+				goto Abort;
+			}
+
 			CFileInfo *i1 = n1->GetFileInfo();
 			CFileInfo *i2 = n2->GetFileInfo();
 
@@ -260,30 +297,20 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 			if(i1->FileSize == i2->FileSize){
 
-				String FileName1 = i1->FileName;
-				String FileName2 = i2->FileName;
-
-				if(CompareFiles(FileName1, FileName2, i1->FileSize)){
+				if(CompareFiles(i1->FileName, i2->FileName, i1->FileSize)){
 
 					duplicated = true;
-
-					wchar_t *fname1 = FileName1.c_str();
-					wchar_t *fname2 = FileName2.c_str();
 
 					if(i1->Duplicated == FALSE){
 
 						NumDuplicatesFound++;
 						i1->Duplicated = TRUE;
-
 						DuplicatesList.Add(i1, id);
-						CheckListBoxDuplicatesFiles->Items->Add(fname1);
 					}
 
 					NumDuplicatesFound++;
 					i2->Duplicated = TRUE;
-
 					DuplicatesList.Add(i2, id);
-					CheckListBoxDuplicatesFiles->Items->Add(fname2);
 				}
 			}
 
@@ -296,9 +323,24 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 		Next1:
 		n1 = n1->GetNext();
+
+		i++;
+		int progress = (int)(((float)i / (float)n) * 100.0f);
+		ScanGauge->Progress = progress;
+		Application->ProcessMessages();
 	}
 
 	BuildColorTable();
+
+	CDuplicatesListNode *node = DuplicatesList.GetFirstNode();
+	while(node){
+		String fname = node->GetFileInfo()->FileName;
+		CheckListBoxDuplicatesFiles->Items->Add(fname);
+		node = node->GetNext();
+	}
+
+	Abort:
+	EnableForm(true);
 
 	return NumDuplicatesFound;
 }
