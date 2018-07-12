@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Top = 0
   Caption = 'Duplicate File Finder'
   ClientHeight = 350
-  ClientWidth = 990
+  ClientWidth = 966
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,12 +20,12 @@ object MainForm: TMainForm
   object ScanGauge: TGauge
     Left = 8
     Top = 312
-    Width = 968
+    Width = 944
     Height = 26
     Progress = 0
   end
   object Label1: TLabel
-    Left = 511
+    Left = 487
     Top = 8
     Width = 74
     Height = 13
@@ -54,7 +54,7 @@ object MainForm: TMainForm
     OnClick = ButtonScanClick
   end
   object CheckListBoxDuplicatesFiles: TCheckListBox
-    Left = 511
+    Left = 487
     Top = 27
     Width = 465
     Height = 216
@@ -65,7 +65,7 @@ object MainForm: TMainForm
     OnDrawItem = CheckListBoxDuplicatesFilesDrawItem
   end
   object ButtonDeleteFiles: TButton
-    Left = 511
+    Left = 487
     Top = 249
     Width = 465
     Height = 51
@@ -128,7 +128,7 @@ object MainForm: TMainForm
     end
   end
   object PopupMenu: TPopupMenu
-    Left = 920
+    Left = 896
     Top = 40
   end
 end

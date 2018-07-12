@@ -30,11 +30,19 @@ void __fastcall TMainForm::FormCreate(TObject *Sender)
 	ListBoxPaths->Items->Add("C:\\Temp\\Tounes du Telephone");
 	#endif
 
-	CheckListBoxDuplicatesFiles->Style = lbStandard;
+//	CheckListBoxDuplicatesFiles->Style = lbStandard;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 {
+	ClearData();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ClearData()
+{
+	CheckListBoxDuplicatesFiles->Items->Clear();
 	ClearColorTable();
 	FilesList.Clear();
 	DuplicatesList.Clear();
@@ -42,19 +50,25 @@ void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void __fastcall TMainForm::EnableForm(bool enabled)
+{
+	ButtonAdd->Enabled = enabled;
+	ButtonDelete->Enabled = enabled;
+	ButtonClear->Enabled = enabled;
+	ButtonScan->Enabled = enabled;
+	ButtonDeleteFiles->Enabled = enabled;
+	ListBoxPaths->Enabled = enabled;
+	CheckListBoxDuplicatesFiles->Enabled = enabled;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void __fastcall TMainForm::ButtonAddClick(TObject *Sender)
 {
-	TOpenDirectoryForm *pOpenDirDlg = new TOpenDirectoryForm(this);
-
-	try {
-		if(pOpenDirDlg && pOpenDirDlg->ShowModal() == mrOk){
-			String dir = pOpenDirDlg->DirectoryListBox->Directory;
-			ListBoxPaths->Items->Add(dir);
-		}
-	} __finally {
-		SAFE_DELETE(pOpenDirDlg);
+	if(OpenDirectoryForm->ShowModal() == mrOk){
+		String dir = OpenDirectoryForm->DirectoryListBox->Directory;
+		ListBoxPaths->Items->Add(dir);
 	}
-
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ButtonDeleteClick(TObject *Sender)
@@ -84,106 +98,19 @@ void __fastcall TMainForm::ButtonScanClick(TObject *Sender)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-TColor __fastcall TMainForm::GetColor(BYTE r, BYTE g, BYTE b, BYTE a)
+bool __fastcall TMainForm::ScanPaths()
 {
-	DWORD col = ((DWORD)r) | ((DWORD)g << 8) | ((DWORD)g << 16) | ((DWORD)a << 24);
-	return TColor(col);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
-{
-	TCheckListBox* CheckListBox = CheckListBoxDuplicatesFiles;
-	TCanvas *Canvas = CheckListBox->Canvas;
-
-	// Save pen, brush and fonts settings
-	TColor OldPen   = Canvas->Pen->Color;
-	TColor OldBrush = Canvas->Brush->Color;
-	TColor OldFont  = Canvas->Font->Color;
-
-	// Paint the background
-	Canvas->Brush->Color = clWindow;
-	Canvas->Font->Color  = clWindowText;
-	Canvas->FillRect(Rect);
-
-	// Store text settings...
-	int l = Rect.Left;
-	int w = Rect.Right - Rect.Left;
-	int h = CheckListBox->ItemHeight;
-	int n = CheckListBox->Items->Count;
-
-	//int k = 0;
-	for(int i = 0; i < n; i++){
-
-		int x = 17;
-		int y = h * i;
-
-		TColor col = clWhite;
-		if(ColorTable && i < (int)TableSize)
-			col = ColorTable[i];
-
-		Canvas->Pen->Color   = col;
-		Canvas->Brush->Color = col;
-
-		TRect r(l, y, l+w, y+h);
-		Canvas->Rectangle(r);
-
-		String txt = CheckListBox->Items->Strings[i];
-		Canvas->TextOutW(x,y, txt);
-
-		if(CheckListBox->State[i] == odFocused)
-			Canvas->DrawFocusRect(Rect);
-	}
-
-	// Restore pen, brush and fonts settings
-	Canvas->Pen->Color   = OldPen;
-	Canvas->Brush->Color = OldBrush;
-	Canvas->Font->Color  = OldFont;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::ScanPaths()
-{
-	FilesList.Clear();
+	ClearData();
 
 	int n = ListBoxPaths->Items->Count;
+	if(n == 0)
+		return false;
 
 	for(int i = 0; i < n; i++){
 		String path = ListBoxPaths->Items->Strings[i];
 		ScanDir(path);
 	}
 
-	/*HWND h = this->Handle;
-	if(MessageBoxA(h, "Warning!", "Save the list of scanned files?", MB_YESNO) == IDOK)
-		SaveFilesList(ScannedFiles);*/
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-bool __fastcall TMainForm::SaveFilesList(const String &fname)
-{
-	CTxtFile f;
-	if(f.Create(fname.c_str())){
-
-		CFilesListNode *node = FilesList.GetFirstNode();
-
-		while(node){
-
-			int res = f.WriteLine(fname.c_str());
-
-			if(!res){
-				f.Close();
-				return false;
-			}
-
-			node = node->GetNext();
-		}
-
-		f.Close();
-	}
-	
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -242,29 +169,13 @@ void __fastcall TMainForm::ScanDir(String &dir)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::EnableForm(bool enabled)
-{
-	ButtonAdd->Enabled = enabled;
-	ButtonDelete->Enabled = enabled;
-	ButtonClear->Enabled = enabled;
-	ButtonScan->Enabled = enabled;
-	ButtonDeleteFiles->Enabled = enabled;
-	ListBoxPaths->Enabled = enabled;
-	CheckListBoxDuplicatesFiles->Enabled = enabled;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 UI64 __fastcall TMainForm::FindDuplicates()
 {
-	DuplicatesList.Clear();
-	CheckListBoxDuplicatesFiles->Items->Clear();
+	UINT64 i = 0;
+	UINT64 n = FilesList.GetSize();
 
 	UINT64 id = 0;
 	UINT64 NumDuplicatesFound = 0;
-
-	UINT64 i = 0;
-	UINT64 n = FilesList.GetSize();
 
 	CFilesListNode *n2 = NULL;
 	CFilesListNode *n1 = FilesList.GetFirstNode();
@@ -272,6 +183,8 @@ UI64 __fastcall TMainForm::FindDuplicates()
 	EnableForm(false);
 	ScanGauge->Progress = 0;
 	Application->ProcessMessages();
+
+	CSimpleTimer Timer;
 
 	while(n1){
 
@@ -284,9 +197,17 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 		while(n2){
 
-			if((GetAsyncKeyState(VK_ESCAPE) & 0x0800) > 0){
-				ShowMessage("Operation aborted.");
-				goto Abort;
+			DWORD ElapsedTime = Timer.Tick();
+			if(ElapsedTime >= 50){
+
+				Timer.Reset();
+				Application->ProcessMessages();
+
+				/*if((GetAsyncKeyState(VK_ESCAPE) & 0x8000) > 0){
+					ShowMessage("Operation aborted.");
+					NumDuplicatesFound = -1;
+					goto Abort;
+				}*/
 			}
 
 			CFileInfo *i1 = n1->GetFileInfo();
@@ -323,8 +244,8 @@ UI64 __fastcall TMainForm::FindDuplicates()
 
 		Next1:
 		n1 = n1->GetNext();
-
 		i++;
+
 		int progress = (int)(((float)i / (float)n) * 100.0f);
 		ScanGauge->Progress = progress;
 		Application->ProcessMessages();
@@ -389,6 +310,8 @@ bool __fastcall TMainForm::CompareFiles(String fname1, String fname2, UINT64 fsi
 	return res;
 }
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void __fastcall TMainForm::BuildColorTable()
 {
 	static const TColor Color1 = TColor(0x00FFE0E0);
@@ -418,5 +341,85 @@ void __fastcall TMainForm::ClearColorTable()
 	TableSize = 0;
 	SAFE_DELETE(ColorTable);
 }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
+{
+	static const TColor c1 = TColor(0x00FFE0E0);
+	static const TColor c2 = TColor(0x00E0FFE0);
+
+	TStrings *Items  = CheckListBoxDuplicatesFiles->Items;
+	TCanvas  *Canvas = CheckListBoxDuplicatesFiles->Canvas;
+
+	TColor OldPen   = Canvas->Pen->Color;
+	TColor OldBrush = Canvas->Brush->Color;
+
+	String txt = Items->Strings[Index];
+	TColor col = Index % 2 == 0 ? c1 : c2;
+
+	Canvas->Pen->Color   = col;
+	Canvas->Brush->Color = col;
+
+	Canvas->Rectangle(Rect);
+	Canvas->TextOutW(Rect.Left+1, Rect.Top+1, txt.c_str());
+
+	//TCheckBoxState *cbState = CheckListBoxDuplicatesFiles->State;
+	//if(CheckListBoxDuplicatesFiles->State[Index] == odFocused)
+	//	Canvas->DrawFocusRect(Rect);
+
+	Canvas->Pen->Color   = OldPen;
+	Canvas->Brush->Color = OldBrush;
+}
+//---------------------------------------------------------------------------
+/*void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
+{
+	TCheckListBox* CheckListBox = CheckListBoxDuplicatesFiles;
+	TCanvas *Canvas = CheckListBox->Canvas;
+
+	// Save pen, brush and fonts settings
+	TColor OldPen   = Canvas->Pen->Color;
+	TColor OldBrush = Canvas->Brush->Color;
+	TColor OldFont  = Canvas->Font->Color;
+
+	// Paint the background
+	Canvas->Brush->Color = clWindow;
+	Canvas->Font->Color  = clWindowText;
+	Canvas->FillRect(Rect);
+
+	// Store text settings...
+	int l = Rect.Left;
+	int w = Rect.Right - Rect.Left;
+	int h = CheckListBox->ItemHeight;
+	int n = CheckListBox->Items->Count;
+
+	//int k = 0;
+	for(int i = 0; i < n; i++){
+
+		int x = 17;
+		int y = h * i;
+
+		TColor col = clWhite;
+		if(ColorTable && i < (int)TableSize)
+			col = ColorTable[i];
+
+		Canvas->Pen->Color   = col;
+		Canvas->Brush->Color = col;
+
+		TRect r(l, y, l+w, y+h);
+		Canvas->Rectangle(r);
+
+		String txt = CheckListBox->Items->Strings[i];
+		Canvas->TextOutW(x,y, txt);
+
+		if(CheckListBox->State[i] == odFocused)
+			Canvas->DrawFocusRect(Rect);
+	}
+
+	// Restore pen, brush and fonts settings
+	Canvas->Pen->Color   = OldPen;
+	Canvas->Brush->Color = OldBrush;
+	Canvas->Font->Color  = OldFont;
+}*/
 //---------------------------------------------------------------------------
 

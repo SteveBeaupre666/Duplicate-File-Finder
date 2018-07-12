@@ -8,6 +8,7 @@
 #include <Vcl.Controls.hpp>
 #include <Vcl.StdCtrls.hpp>
 #include <Vcl.Samples.Gauges.hpp>
+#include <Vcl.ComCtrls.hpp>
 #include <System.Classes.hpp>
 //---------------------------------------------------------------------------
 #include "OpenDirectoryUnit.h"
@@ -15,8 +16,7 @@
 #include "TxtFile.h"
 #include "FilesList.h"
 #include "DuplicatesList.h"
-#include <Vcl.ComCtrls.hpp>
-//#include "LinkedList.h"
+#include "SimpleTimer.h"
 //---------------------------------------------------------------------------
 #define UI64   unsigned __int64
 #define UINT64 unsigned __int64
@@ -54,22 +54,19 @@ __published:	// IDE-managed Components
 	void __fastcall ButtonDeleteClick(TObject *Sender);
 	void __fastcall ButtonClearClick(TObject *Sender);
 	void __fastcall CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State);
-private:	// User declarations
-	TColor __fastcall GetColor(BYTE r, BYTE g, BYTE b, BYTE a = 0);
-	String __fastcall MakePaths(String s1, String s2);
-
+private:
+	void __fastcall ClearData();
 	void __fastcall EnableForm(bool enabled);
 
-	void __fastcall ScanPaths();
+	bool __fastcall ScanPaths();
 	void __fastcall ScanDir(String &dir);
-	bool __fastcall SaveFilesList(const String &fname);
 
 	UI64 __fastcall FindDuplicates();
 	bool __fastcall CompareFiles(String fname1, String fname2, UINT64 fsize);
 
 	void __fastcall BuildColorTable();
 	void __fastcall ClearColorTable();
-public:		// User declarations
+public:
 	__fastcall TMainForm(TComponent* Owner);
 };
 //---------------------------------------------------------------------------

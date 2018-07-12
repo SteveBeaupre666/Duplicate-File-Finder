@@ -85,6 +85,8 @@
         <ILINK_TranslatedLibraryPath>$(BDSLIB)\$(PLATFORM)\debug\$(LANGDIR);$(ILINK_TranslatedLibraryPath)</ILINK_TranslatedLibraryPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
         <LinkPackageImports>rtl.bpi;vcl.bpi;vclx.bpi;VclSmp.bpi</LinkPackageImports>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -100,18 +102,26 @@
         </PCHCompile>
         <CppCompile Include="Lib\DuplicatesList.cpp">
             <DependentOn>Lib\DuplicatesList.h</DependentOn>
-            <BuildOrder>6</BuildOrder>
+            <BuildOrder>3</BuildOrder>
         </CppCompile>
         <CppCompile Include="Lib\FilesList.cpp">
             <DependentOn>Lib\FilesList.h</DependentOn>
-            <BuildOrder>7</BuildOrder>
-        </CppCompile>
-        <None Include="LinkedList.h">
             <BuildOrder>4</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="Lib\SimpleTimer.cpp">
+            <BuildOrder>6</BuildOrder>
+        </CppCompile>
+        <None Include="Lib\SimpleTimer.h">
+            <BuildOrder>7</BuildOrder>
+        </None>
+        <CppCompile Include="Lib\TxtFile.cpp">
+            <BuildOrder>8</BuildOrder>
+        </CppCompile>
+        <None Include="Lib\TxtFile.h">
+            <BuildOrder>9</BuildOrder>
         </None>
         <CppCompile Include="MainUnit.cpp">
             <Form>MainForm</Form>
-            <FormType>dfm</FormType>
             <DependentOn>MainUnit.h</DependentOn>
             <BuildOrder>2</BuildOrder>
         </CppCompile>
@@ -119,10 +129,7 @@
             <Form>OpenDirectoryForm</Form>
             <FormType>dfm</FormType>
             <DependentOn>OpenDirectoryUnit.h</DependentOn>
-            <BuildOrder>3</BuildOrder>
-        </CppCompile>
-        <CppCompile Include="TxtFile.cpp">
-            <BuildOrder>6</BuildOrder>
+            <BuildOrder>1</BuildOrder>
         </CppCompile>
         <FormResources Include="MainUnit.dfm"/>
         <FormResources Include="OpenDirectoryUnit.dfm"/>
@@ -186,6 +193,12 @@
                     <ProjectProperties Name="ManagePaths">True</ProjectProperties>
                     <ProjectProperties Name="VerifyPackages">True</ProjectProperties>
                 </ProjectProperties>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k170.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp170.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </CPlusPlusBuilder.Personality>
             <Deployment/>
             <Platforms>
