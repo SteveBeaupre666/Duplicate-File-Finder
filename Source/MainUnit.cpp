@@ -346,29 +346,27 @@ void __fastcall TMainForm::ClearColorTable()
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
-	static const TColor c1 = TColor(0x00FFE0E0);
-	static const TColor c2 = TColor(0x00E0FFE0);
-
 	TStrings *Items  = CheckListBoxDuplicatesFiles->Items;
 	TCanvas  *Canvas = CheckListBoxDuplicatesFiles->Canvas;
 
 	TColor OldPen   = Canvas->Pen->Color;
+	TColor OldFont  = Canvas->Font->Color;
 	TColor OldBrush = Canvas->Brush->Color;
 
 	String txt = Items->Strings[Index];
-	TColor col = Index % 2 == 0 ? c1 : c2;
+	TColor col = ColorTable && Index < (int)TableSize ? ColorTable[Index] : clWindow;
 
 	Canvas->Pen->Color   = col;
 	Canvas->Brush->Color = col;
+	Canvas->Font->Color  = clWindowText;
 
 	Canvas->Rectangle(Rect);
 	Canvas->TextOutW(Rect.Left+1, Rect.Top+1, txt.c_str());
-
-	//TCheckBoxState *cbState = CheckListBoxDuplicatesFiles->State;
-	//if(CheckListBoxDuplicatesFiles->State[Index] == odFocused)
-	//	Canvas->DrawFocusRect(Rect);
+	if(CheckListBoxDuplicatesFiles->State[Index] == odFocused)
+		Canvas->DrawFocusRect(Rect);
 
 	Canvas->Pen->Color   = OldPen;
+	Canvas->Font->Color  = OldFont;
 	Canvas->Brush->Color = OldBrush;
 }
 //---------------------------------------------------------------------------
