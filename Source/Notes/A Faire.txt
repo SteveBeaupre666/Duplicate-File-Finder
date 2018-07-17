@@ -1,0 +1,8 @@
+-Retravailler l'interface (GUI)
+-Finir le boutton pour deleter les fichiers checkers
+-Ajouter un option pour les jeter a corbeille au lieu
+ des effacers definitivement
+-Montrer comment de duplicate (en groupe et en toute) pis
+ montrer l'espace gaspiller
+-Batir un array de pointer de CDuplicateNode pour optimizer
+-Pouvoir changer la grosseur des fonts dans la check list

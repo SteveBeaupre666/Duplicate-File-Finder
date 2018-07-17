@@ -56,9 +56,9 @@ void __fastcall TMainForm::EnableForm(bool enabled)
 	ButtonDelete->Enabled = enabled;
 	ButtonClear->Enabled = enabled;
 	ButtonScan->Enabled = enabled;
-	ButtonDeleteFiles->Enabled = enabled;
-	ListBoxPaths->Enabled = enabled;
+	ButtonDeleteCheckedFiles->Enabled = enabled;
 	CheckListBoxDuplicatesFiles->Enabled = enabled;
+	ListBoxPaths->Enabled = enabled;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -419,5 +419,10 @@ void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Cont
 	Canvas->Brush->Color = OldBrush;
 	Canvas->Font->Color  = OldFont;
 }*/
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ButtonDeleteCheckedFilesClick(TObject *Sender)
+{
+//
+}
 //---------------------------------------------------------------------------
 
