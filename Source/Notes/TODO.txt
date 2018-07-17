@@ -1,39 +1,14 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+-Retravailler l'interface (GUI)
+ -Ajouter un main menu et une status bar, pis des popups menus itout
+ -Pouvoir changer la grosseur des fonts dans la check list
+ -Disabler les bouttons si ya rien a scanner, ou pas de duplicates
+ -Montrer le nb de duplicates et l'espace gaspiller a fin du scan
 
-*** USE 64 BITS INTEGERS AND UNICODE ***
+-Encapsuler le code pour lire et comparer les fichiers
+-Finir de coder le boutton pour deleter les fichiers checkers
+-Ajouter un option "Delete Permanantly" or "Dump to recycle bin"
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+-Batir un array de pointer de CDuplicateNode pour optimizer la vitesse du scan
 
--Faire une class de String simple... 
--Faire une class, fonction ou macro pour convertir 3 valeurs RGB en TColor (0xAABBGGRR)
--Faire une VCL TDuplicateListBox (hérité de TCheckListBox)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
--Faire une class pour comparer 2 fichiers (Don't match, match, partial match)
--Faire une class pour scanner les fichiers, avec filtres, whitelist, blacklist ect...)
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
--Crée une linked list (sans templates) pour la liste de fichiers
-  -Chaque node contient:
-    -Nom du fichier(sans ou avec String, a checker)
-    -Grosseur du fichier, en 64 bits
-    -Duplicated flag
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
--Crée une linked list (sans templates) pour faire une liste de fichiers dupliquers
-  -Chaque node contient:
-    -The number of duplicated files
-    -A pointer to each duplicated files stored the files list
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
--Crée une linked list (sans templates) pour faire une liste de chaque liste de fichiers dupliquer
-  -Chaque node contient:
-    -A pointer to each duplicates list
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+-Scanner et comparer les fichiers sur un autre thread, pour pas blocker l'interface
+-Pouvoir aborter le scan quand on veut

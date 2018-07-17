@@ -41,7 +41,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Exit1;
 	TMenuItem *N1;
 	TPopupMenu *PopupMenu;
-	TButton *ButtonDeleteCheckedFiles;
+	TButton *ButtonDeleteSelectedFiles;
 	TButton *ButtonAdd;
 	TButton *ButtonClear;
 	TButton *ButtonDelete;
@@ -54,7 +54,7 @@ __published:	// IDE-managed Components
 	void __fastcall ButtonDeleteClick(TObject *Sender);
 	void __fastcall ButtonClearClick(TObject *Sender);
 	void __fastcall CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State);
-	void __fastcall ButtonDeleteCheckedFilesClick(TObject *Sender);
+	void __fastcall ButtonDeleteSelectedFilesClick(TObject *Sender);
 private:
 	void __fastcall ClearData();
 	void __fastcall EnableForm(bool enabled);

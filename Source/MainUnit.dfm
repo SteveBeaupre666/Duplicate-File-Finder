@@ -64,12 +64,12 @@ object MainForm: TMainForm
     TabOrder = 1
     OnDrawItem = CheckListBoxDuplicatesFilesDrawItem
   end
-  object ButtonDeleteCheckedFiles: TButton
+  object ButtonDeleteSelectedFiles: TButton
     Left = 487
     Top = 249
     Width = 465
     Height = 51
-    Caption = 'Delete Checked Files...'
+    Caption = 'Delete Selected Files...'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -21
@@ -77,7 +77,7 @@ object MainForm: TMainForm
     Font.Style = []
     ParentFont = False
     TabOrder = 2
-    OnClick = ButtonDeleteCheckedFilesClick
+    OnClick = ButtonDeleteSelectedFilesClick
   end
   object ButtonAdd: TButton
     Left = 8

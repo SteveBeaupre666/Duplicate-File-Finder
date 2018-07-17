@@ -26,8 +26,7 @@ __fastcall TMainForm::TMainForm(TComponent* Owner):TForm(Owner){}
 void __fastcall TMainForm::FormCreate(TObject *Sender)
 {
 	#ifdef TESTMODE
-	//ListBoxPaths->Items->Add(TestDir);
-	ListBoxPaths->Items->Add("C:\\Temp\\Tounes du Telephone");
+	ListBoxPaths->Items->Add(TestDir);
 	#endif
 
 //	CheckListBoxDuplicatesFiles->Style = lbStandard;
@@ -52,13 +51,14 @@ void __fastcall TMainForm::ClearData()
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::EnableForm(bool enabled)
 {
-	ButtonAdd->Enabled = enabled;
+	ButtonAdd->Enabled    = enabled;
 	ButtonDelete->Enabled = enabled;
-	ButtonClear->Enabled = enabled;
-	ButtonScan->Enabled = enabled;
-	ButtonDeleteCheckedFiles->Enabled = enabled;
-	CheckListBoxDuplicatesFiles->Enabled = enabled;
+	ButtonClear->Enabled  = enabled;
+	ButtonScan->Enabled   = enabled;
 	ListBoxPaths->Enabled = enabled;
+
+	ButtonDeleteSelectedFiles->Enabled   = enabled;
+	CheckListBoxDuplicatesFiles->Enabled = enabled;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ void __fastcall TMainForm::ButtonDeleteClick(TObject *Sender)
 	int i = 0;
 	while(i < ListBoxPaths->Items->Count){
 
-		if(ListBoxPaths->Selected[i]){
+		if(ListBoxPaths->Selected[i]){ // Fix: This can be shorter...
 			i++;
 			continue;
 		}
@@ -420,7 +420,7 @@ void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Cont
 	Canvas->Font->Color  = OldFont;
 }*/
 //---------------------------------------------------------------------------
-void __fastcall TMainForm::ButtonDeleteCheckedFilesClick(TObject *Sender)
+void __fastcall TMainForm::ButtonDeleteSelectedFilesClick(TObject *Sender)
 {
 //
 }
