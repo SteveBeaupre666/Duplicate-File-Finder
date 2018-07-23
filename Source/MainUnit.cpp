@@ -8,8 +8,11 @@
 //---------------------------------------------------------------------------
 TMainForm *MainForm;
 //---------------------------------------------------------------------------
-UI64    TableSize  = 0;
-TColor *ColorTable = NULL;
+UI64    ColorTableSize = 0;
+TColor *ColorTable     = NULL;
+//---------------------------------------------------------------------------
+//UI64    FileInfoTableSize = 0;
+//CFileInfo **FileInfoTable = NULL;
 //---------------------------------------------------------------------------
 CFilesList      FilesList;
 CDuplicatesList DuplicatesList;
@@ -19,8 +22,6 @@ const String TestDir         = AppDir + "\\Test Folder";
 const String ScannedFiles    = AppDir + "\\FilesList.txt";
 const String DuplicatedFiles = AppDir + "\\DuplicatesList.txt";
 //---------------------------------------------------------------------------
-//const wchar_t newline = '\n';
-//---------------------------------------------------------------------------
 __fastcall TMainForm::TMainForm(TComponent* Owner):TForm(Owner){}
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::FormCreate(TObject *Sender)
@@ -28,8 +29,6 @@ void __fastcall TMainForm::FormCreate(TObject *Sender)
 	#ifdef TESTMODE
 	ListBoxPaths->Items->Add(TestDir);
 	#endif
-
-//	CheckListBoxDuplicatesFiles->Style = lbStandard;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
@@ -41,10 +40,10 @@ void __fastcall TMainForm::FormClose(TObject *Sender, TCloseAction &Action)
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ClearData()
 {
-	CheckListBoxDuplicatesFiles->Items->Clear();
 	ClearColorTable();
 	FilesList.Clear();
 	DuplicatesList.Clear();
+	CheckListBoxDuplicatesFiles->Items->Clear();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -66,8 +65,22 @@ void __fastcall TMainForm::EnableForm(bool enabled)
 void __fastcall TMainForm::ButtonAddClick(TObject *Sender)
 {
 	if(OpenDirectoryForm->ShowModal() == mrOk){
+
 		String dir = OpenDirectoryForm->DirectoryListBox->Directory;
-		ListBoxPaths->Items->Add(dir);
+
+		bool found = false;
+		for(int i = 0; i < ListBoxPaths->Items->Count; i++){
+			if(ListBoxPaths->Items->Strings[i] == dir){
+				found = true;
+				break;
+			}
+		}
+
+		switch(found)
+		{
+		case false: ListBoxPaths->Items->Add(dir);      break;
+		case true:  ShowMessage("Path already added."); break;
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -75,13 +88,46 @@ void __fastcall TMainForm::ButtonDeleteClick(TObject *Sender)
 {
 	int i = 0;
 	while(i < ListBoxPaths->Items->Count){
-
-		if(ListBoxPaths->Selected[i]){ // Fix: This can be shorter...
+		if(ListBoxPaths->Selected[i]){
+			ListBoxPaths->Items->Delete(i);
+		} else {
 			i++;
-			continue;
 		}
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ButtonDeleteSelectedFilesClick(TObject *Sender)
+{
+	static const wchar_t newline = '\n';
 
-		ListBoxPaths->Items->Delete(i);
+	int n = CheckListBoxDuplicatesFiles->Items->Count;
+	if(n == 0)
+		return;
+
+	int NumFilesSelected = 0;
+	for(int i = 0; i < n; i++){
+		if(CheckListBoxDuplicatesFiles->Selected[i])
+			NumFilesSelected++;
+	}
+
+	String cap = "Warning";
+	String msg = IntToStr(NumFilesSelected) + " are about to be deleted." + String(newline) + "Continue?";
+	if(MessageBoxW(Handle, cap.c_str(), msg.c_str(), MB_YESNOCANCEL) != IDYES)
+		return;
+
+	int NumFilesDeleted  = 0;
+	for(int i = 0; i < n; i++){
+
+		if(CheckListBoxDuplicatesFiles->Selected[i]){
+
+			String fname = CheckListBoxDuplicatesFiles->Items->Strings[i];
+
+			BOOL res = true;
+			//BOOL res = DeleteFileW(fname.c_str());
+
+			if(res)
+				NumFilesDeleted++;
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -92,26 +138,25 @@ void __fastcall TMainForm::ButtonClearClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ButtonScanClick(TObject *Sender)
 {
+	if(ListBoxPaths->Items->Count == 0){
+		ShowMessage("No path to scan.");
+		return;
+	}
+
 	ScanPaths();
-	FindDuplicates();
+	UI64 res = FindDuplicates();
+	ShowMessage(IntToStr((__int64)res) + " duplicates found.");
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool __fastcall TMainForm::ScanPaths()
+void __fastcall TMainForm::ScanPaths()
 {
 	ClearData();
-
-	int n = ListBoxPaths->Items->Count;
-	if(n == 0)
-		return false;
-
-	for(int i = 0; i < n; i++){
-		String path = ListBoxPaths->Items->Strings[i];
-		ScanDir(path);
+	for(int i = 0; i < ListBoxPaths->Items->Count; i++){
+		String dir = ListBoxPaths->Items->Strings[i];
+		ScanDir(dir);
 	}
-
-	return true;
 }
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ScanDir(String &dir)
@@ -152,11 +197,6 @@ void __fastcall TMainForm::ScanDir(String &dir)
 			FilesList.Add(&fi);
 		} else {
 			String NewPath = dir + "\\" + fname;
-			if(fname == "Mix"){
-				_asm {
-					nop
-				}
-			}
 			ScanDir(NewPath);
 		}
 
@@ -168,6 +208,11 @@ void __fastcall TMainForm::ScanDir(String &dir)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+int __fastcall TMainForm::CalcProgress(UINT64 i, UINT64 n)
+{
+	return (int)(((double)i / (double)n) * 100.0);
+}
 //---------------------------------------------------------------------------
 UI64 __fastcall TMainForm::FindDuplicates()
 {
@@ -223,7 +268,6 @@ UI64 __fastcall TMainForm::FindDuplicates()
 					duplicated = true;
 
 					if(i1->Duplicated == FALSE){
-
 						NumDuplicatesFound++;
 						i1->Duplicated = TRUE;
 						DuplicatesList.Add(i1, id);
@@ -246,8 +290,7 @@ UI64 __fastcall TMainForm::FindDuplicates()
 		n1 = n1->GetNext();
 		i++;
 
-		int progress = (int)(((float)i / (float)n) * 100.0f);
-		ScanGauge->Progress = progress;
+		ScanGauge->Progress = CalcProgress(i, n);
 		Application->ProcessMessages();
 	}
 
@@ -282,23 +325,23 @@ bool __fastcall TMainForm::CompareFiles(String fname1, String fname2, UINT64 fsi
 	BYTE Buffer1[BufferSize];
 	BYTE Buffer2[BufferSize];
 
-	DWORD NumBytesRead1 = 0;
-	DWORD NumBytesRead2 = 0;
+	DWORD NumRead1 = 0;
+	DWORD NumRead2 = 0;
 
 	for(UINT64 i = 0; i < FileSize; i += BufferSize){
 
 		ZeroMemory(&Buffer1[0], BufferSize);
 		ZeroMemory(&Buffer2[0], BufferSize);
 
-		ReadFile(h1, &Buffer1[0], BufferSize, &NumBytesRead1, NULL);
-		ReadFile(h2, &Buffer2[0], BufferSize, &NumBytesRead2, NULL);
+		ReadFile(h1, &Buffer1[0], BufferSize, &NumRead1, NULL);
+		ReadFile(h2, &Buffer2[0], BufferSize, &NumRead2, NULL);
 
-		if(NumBytesRead1 != NumBytesRead2 || NumBytesRead1 == 0 || NumBytesRead2 == 0){
+		if(NumRead1 != NumRead2 || NumRead1 == 0 || NumRead2 == 0){
 			res = false;
 			break;
 		}
 
-		if(memcmp(&Buffer1[0], &Buffer2[0], NumBytesRead1) != 0){
+		if(memcmp(&Buffer1[0], &Buffer2[0], NumRead1) != 0){
 			res = false;
 			break;
 		}
@@ -319,12 +362,12 @@ void __fastcall TMainForm::BuildColorTable()
 
 	ClearColorTable();
 
-	TableSize = DuplicatesList.GetSize();
-	if(TableSize == 0)
+	ColorTableSize = DuplicatesList.GetSize();
+	if(ColorTableSize == 0)
 		return;
 
-	ColorTable = new TColor[TableSize];
-	ZeroMemory(&ColorTable[0], TableSize * sizeof(TColor));
+	ColorTable = new TColor[ColorTableSize];
+	ZeroMemory(&ColorTable[0], ColorTableSize * sizeof(TColor));
 
 	CDuplicatesListNode* node = DuplicatesList.GetFirstNode();
 
@@ -338,9 +381,38 @@ void __fastcall TMainForm::BuildColorTable()
 //---------------------------------------------------------------------------
 void __fastcall TMainForm::ClearColorTable()
 {
-	TableSize = 0;
+	ColorTableSize = 0;
 	SAFE_DELETE(ColorTable);
 }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+/*void __fastcall TMainForm::BuildFileInfoTable()
+{
+	ClearFileInfoTable();
+
+	FileInfoTableSize = FilesList.GetSize();
+	if(FileInfoTableSize == 0)
+		return;
+
+	FileInfoTable = new CFileInfo*[FileInfoTableSize];
+	ZeroMemory(&(*FileInfoTable[0]), FileInfoTableSize * sizeof(CFileInfo*));
+
+	CFilesListNode* node = FilesList.GetFirstNode();
+
+	UINT i = 0;
+	while(node){
+		CFileInfo *info = node->GetFileInfo();
+		&(*FileInfoTable[i++]) = info;
+		node = node->GetNext();
+	}
+}
+//---------------------------------------------------------------------------
+void __fastcall TMainForm::ClearFileInfoTable()
+{
+	FileInfoTableSize = 0;
+	SAFE_DELETE(*FileInfoTable);
+}*/
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -354,7 +426,7 @@ void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Cont
 	TColor OldBrush = Canvas->Brush->Color;
 
 	String txt = Items->Strings[Index];
-	TColor col = ColorTable && Index < (int)TableSize ? ColorTable[Index] : clWindow;
+	TColor col = ColorTable && Index < (int)ColorTableSize ? ColorTable[Index] : clWindow;
 
 	Canvas->Pen->Color   = col;
 	Canvas->Brush->Color = col;
@@ -368,61 +440,6 @@ void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Cont
 	Canvas->Pen->Color   = OldPen;
 	Canvas->Font->Color  = OldFont;
 	Canvas->Brush->Color = OldBrush;
-}
-//---------------------------------------------------------------------------
-/*void __fastcall TMainForm::CheckListBoxDuplicatesFilesDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
-{
-	TCheckListBox* CheckListBox = CheckListBoxDuplicatesFiles;
-	TCanvas *Canvas = CheckListBox->Canvas;
-
-	// Save pen, brush and fonts settings
-	TColor OldPen   = Canvas->Pen->Color;
-	TColor OldBrush = Canvas->Brush->Color;
-	TColor OldFont  = Canvas->Font->Color;
-
-	// Paint the background
-	Canvas->Brush->Color = clWindow;
-	Canvas->Font->Color  = clWindowText;
-	Canvas->FillRect(Rect);
-
-	// Store text settings...
-	int l = Rect.Left;
-	int w = Rect.Right - Rect.Left;
-	int h = CheckListBox->ItemHeight;
-	int n = CheckListBox->Items->Count;
-
-	//int k = 0;
-	for(int i = 0; i < n; i++){
-
-		int x = 17;
-		int y = h * i;
-
-		TColor col = clWhite;
-		if(ColorTable && i < (int)TableSize)
-			col = ColorTable[i];
-
-		Canvas->Pen->Color   = col;
-		Canvas->Brush->Color = col;
-
-		TRect r(l, y, l+w, y+h);
-		Canvas->Rectangle(r);
-
-		String txt = CheckListBox->Items->Strings[i];
-		Canvas->TextOutW(x,y, txt);
-
-		if(CheckListBox->State[i] == odFocused)
-			Canvas->DrawFocusRect(Rect);
-	}
-
-	// Restore pen, brush and fonts settings
-	Canvas->Pen->Color   = OldPen;
-	Canvas->Brush->Color = OldBrush;
-	Canvas->Font->Color  = OldFont;
-}*/
-//---------------------------------------------------------------------------
-void __fastcall TMainForm::ButtonDeleteSelectedFilesClick(TObject *Sender)
-{
-//
 }
 //---------------------------------------------------------------------------
 

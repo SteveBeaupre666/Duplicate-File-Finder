@@ -59,14 +59,19 @@ private:
 	void __fastcall ClearData();
 	void __fastcall EnableForm(bool enabled);
 
-	bool __fastcall ScanPaths();
+	void __fastcall ScanPaths();
 	void __fastcall ScanDir(String &dir);
 
 	UI64 __fastcall FindDuplicates();
 	bool __fastcall CompareFiles(String fname1, String fname2, UINT64 fsize);
 
+	//void __fastcall BuildFileInfoTable();
+	//void __fastcall ClearFileInfoTable();
+
 	void __fastcall BuildColorTable();
 	void __fastcall ClearColorTable();
+
+	int __fastcall  CalcProgress(UINT64 i, UINT64 n);
 public:
 	__fastcall TMainForm(TComponent* Owner);
 };

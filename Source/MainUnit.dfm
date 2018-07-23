@@ -112,10 +112,11 @@ object MainForm: TMainForm
     Width = 465
     Height = 185
     ItemHeight = 13
+    MultiSelect = True
     TabOrder = 6
   end
   object MainMenu: TMainMenu
-    Left = 32
+    Left = 24
     Top = 40
     object File1: TMenuItem
       Caption = '&File'
